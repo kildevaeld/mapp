@@ -14,7 +14,7 @@ class Application {
 public:
   Application(int argc, char **argv);
   Application(const Application &) = delete;
-  ~Application();
+  virtual ~Application();
 
   template <typename T, typename... Args> T *command(Args &&... args) {
     T *in = new T(this, std::forward<Args>(args)...);
@@ -35,6 +35,9 @@ public:
   args::ArgumentParser &parser() { return *m_parser.get(); }
 
   int run();
+
+protected:
+  virtual void initialized();
 
 private:
   static void run(uv_async_t *handle);

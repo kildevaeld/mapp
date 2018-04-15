@@ -40,10 +40,12 @@ void Application::exit(const std::string &msg) {
 
 void Application::run(uv_async_t *handle) {
   Application *app = static_cast<Application *>(handle->data);
+  uv_close((uv_handle_t *)handle, NULL);
   args::HelpFlag h(*app->m_parser, "help", "help", {'h', "help"});
 
   try {
-    app->m_parser->ParseCLI(app->m_argc, app->m_argv);
+    bool ret = app->m_parser->ParseCLI(app->m_argc, app->m_argv);
+
   } catch (args::Help) {
     std::cout << *app->m_parser << std::endl;
 
@@ -52,11 +54,13 @@ void Application::run(uv_async_t *handle) {
 
   } catch (const args::RequiredError &e) {
     std::cerr << e.what() << "\n" << *app->m_parser << std::endl;
+  } catch (const args::ValidationError &e) {
+    std::cerr << e.what() << "\n" << *app->m_parser << std::endl;
+  } /*catch (...) {
+    std::cout << "Heller ikk" << std::endl;
+  }*/
 
-  } catch (...) {
-  }
-
-  uv_close((uv_handle_t *)handle, NULL);
+  /// uv_close((uv_handle_t *)handle, NULL);
 }
 
 int Application::run() {
@@ -67,3 +71,5 @@ int Application::run() {
   uv_async_send(&async);
   return uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 }
+
+void Application::initialized() {}
